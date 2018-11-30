@@ -5,98 +5,96 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Document</title>
+    <title>Run nslookup Online</title>
     <style>
+      body {
+        padding-left: 2rem;
+      }
+
       h1 {
         color: blue;
       }
-    
+
       input {
-          width: 15rem;
-          height: 2.5rem;
-          font-size: 1rem;
-          background-color: #ddd;
-          padding-left: 0.5rem;
+        width: 15rem;
+        height: 2.5rem;
+        font-size: 1rem;
+        background-color: #ddd;
+        padding-left: 0.5rem;
       }
     </style>
   </head>
   <body>
     <h1>The Address Annex</h1>
-    <h3>Add a URL and the matching IP from nslookup to the database...</h3>
+    <h2>Add a URL to run <code>nslookup</code> on...</h2>
     <input
       type="text"
       name="url-address"
       id="url-address"
       placeholder="ex: www.example.com"
       required
-    /><br />
-    <input type="text" name="ip-address" id="ip-address" placeholder="ex: 192.168.0.0" required></textarea><br /><br/>
+    /><br /><br />
     <button type="button" id="submit">Click to submit</button> <br /><br />
     <p>You Have Saved <span id="post-number"></span> Addresses</p>
     <ul id="addresses"></ul>
     <script type="text/javascript">
-        window.onload = () => {
-            let postNumber = 0;
-            $.ajax({
-                url: '/fetch_data',
-                success: (data) => {
-                  if (data.body) {
-                    buildPosts(data.body);
-                    postNumber = data.postNumber;
-                  } 
-                }
-            })
+      window.onload = () => {
+        let postNumber = 0;
 
-            document.querySelector('#post-number').innerHTML = String(postNumber);
+        document.querySelector("#post-number").innerHTML = String(postNumber);
 
-            const buildPosts = (data) => {
-                let addresses = document.querySelector('#addresses');
-                for (let i = 0; i < Object.keys(data).length; i++) {
-                    addresses.innerHTML += `<li>
-                        <p>Ip address: ${data[i].url}</p>
-                        <p>Url: ${data[i].ip}</p>    
-                    </li>`
-                }
-            }
-            
-            let submit = document.querySelector("#submit");
-            
-            submit.addEventListener("click", () => {
-              let ip = document.querySelector("#ip-address").value;
-              let url = document.querySelector("#url-address").value;
-              if (!ip || !url) {
-                alert("Please fill both fields");
-                return;
-              }
-              validateInputs(ip, url)
+        const buildPost = (url, data) => {
+          let addresses = document.querySelector("#addresses");
+          for (let i = 0; i < postNumber; i++) {
+            addresses.innerHTML += `<li><p>${url}</p><p>${data}</p></li>`;
+          }
+        };
 
-              newPostNumber = String(postNumber++);
-              const data = {
-                newPostNumber: {
-                  ip: ip,
-                  url: url
-                }
-              };
-              // console.log(JSON.stringify(data));
-              $.ajax({
-                url: "/post_data",
-                method: "POST",
-                data: data
-              }).done(posts => {});
-            });
+        let submit = document.querySelector("#submit");
 
-            const validateInputs = (ip, url) => {
-                // regex that bitch, if either returns false then stahp
-                ipRegex = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/
-                validIp = !!ip.match(ipRegex);
-                urlRegex = /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/
-                validUrl = !!url.match(urlRegex);
-                if (validIp && validUrl) {
-                  return true;
-                }
-                return false;
-            }  
-        }
+        submit.addEventListener("click", () => {
+          let url = document.querySelector("#url-address").value;
+          console.log(url);
+
+          if (!url) {
+            alert("Please fill both fields");
+            return;
+          }
+
+          let invalid = validateInput(url);
+          if (invalid) {
+            alert("Invalid URL");
+            return;
+          }
+
+          const data = {
+            url: url
+          };
+
+          $.ajax({
+            url: "/post_data",
+            method: "POST",
+            data: JSON.stringify(data)
+          }).done(data => {
+            // console.log(data);
+            buildPost(data);
+            postNumber++;
+            document.querySelector("#post-number").innerHTML = String(
+              postNumber
+            );
+          });
+        });
+
+        const validateInput = url => {
+          // regex that bitch, if either returns false then stahp
+          urlRegex = /www\.[A-Za-z]\.[A-Za-z]{,4}/;
+          validUrl = !!url.match(urlRegex);
+          if (validUrl) {
+            return true;
+          }
+          return false;
+        };
+      };
     </script>
   </body>
 </html>
