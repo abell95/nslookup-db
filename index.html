@@ -27,34 +27,25 @@
   <body>
     <h1>The Address Annex</h1>
     <h2>Add a URL to run <code>nslookup</code> on...</h2>
+    <p>(must be complete url)</p>
     <input
       type="text"
       name="url-address"
       id="url-address"
-      placeholder="ex: www.example.com"
+      placeholder="ex: http://www.example.com"
       required
     /><br /><br />
     <button type="button" id="submit">Click to submit</button> <br /><br />
-    <p>You Have Searched <span id="post-number"></span> Addresses</p>
+    <p>You Have Searched <span id="post-number">0</span> Addresses</p>
     <ul id="addresses"></ul>
     <script type="text/javascript">
       window.onload = () => {
         let postNumber = 0;
 
-        document.querySelector("#post-number").innerHTML = String(postNumber);
-
-        const buildPost = (url, data) => {
-          let addresses = document.querySelector("#addresses");
-          for (let i = 0; i < postNumber; i++) {
-            addresses.innerHTML += `<li><p>${url}</p><p>${data}</p></li>`;
-          }
-        };
-
         let submit = document.querySelector("#submit");
 
         submit.addEventListener("click", () => {
           let url = document.querySelector("#url-address").value;
-          console.log(url);
 
           if (!url) {
             alert("Please fill the field to submit");
@@ -67,32 +58,35 @@
             return;
           }
 
-          const data = {
-            url: url
-          };
-
           $.ajax({
             url: "/post_data",
             method: "POST",
-            data: JSON.stringify(data)
-          }).done(data => {
-            // console.log(data);
-            buildPost(data);
-            postNumber++;
-            document.querySelector("#post-number").innerHTML = String(
-              postNumber
-            );
+            data: JSON.stringify({ url: url }),
+            contentType: "application/json",
+            dataType: "json",
+            success: res => {
+              buildPost(url, res.data);
+              postNumber++;
+              document.querySelector("#post-number").innerHTML = String(
+                postNumber
+              );
+            }
           });
         });
 
         const validateInput = url => {
-          // regex that sucker and
-          urlRegex = /^www\.[A-Za-z]\.[A-Za-z]{,4}$/;
-          validUrl = url.match(urlRegex);
+          // regex checks if it is complete url including http and www
+          let pattern = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+          validUrl = pattern.test(url);
           if (validUrl) {
             return true;
           }
           return false;
+        };
+
+        const buildPost = (url, data) => {
+          let addresses = document.querySelector("#addresses");
+          addresses.innerHTML += `<li><p>${url}</p><p>${data}</p></li>`;
         };
       };
     </script>
