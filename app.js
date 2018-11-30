@@ -12,7 +12,7 @@ app.get("/", (req, res) => {
 });
 
 app.post("/post_data", (req, res) => {
-  const newPost = Object.keys(req.query);
+  const newPost = Object.keys(req.body);
   console.log(newPost);
   res.status(200).send();
 });

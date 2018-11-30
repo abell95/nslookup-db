@@ -35,7 +35,7 @@
       required
     /><br /><br />
     <button type="button" id="submit">Click to submit</button> <br /><br />
-    <p>You Have Saved <span id="post-number"></span> Addresses</p>
+    <p>You Have Searched <span id="post-number"></span> Addresses</p>
     <ul id="addresses"></ul>
     <script type="text/javascript">
       window.onload = () => {
@@ -57,12 +57,12 @@
           console.log(url);
 
           if (!url) {
-            alert("Please fill both fields");
+            alert("Please fill the field to submit");
             return;
           }
 
-          let invalid = validateInput(url);
-          if (invalid) {
+          let valid = validateInput(url);
+          if (!valid) {
             alert("Invalid URL");
             return;
           }
@@ -86,9 +86,9 @@
         });
 
         const validateInput = url => {
-          // regex that bitch, if either returns false then stahp
-          urlRegex = /www\.[A-Za-z]\.[A-Za-z]{,4}/;
-          validUrl = !!url.match(urlRegex);
+          // regex that sucker and
+          urlRegex = /^www\.[A-Za-z]\.[A-Za-z]{,4}$/;
+          validUrl = url.match(urlRegex);
           if (validUrl) {
             return true;
           }
